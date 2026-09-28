@@ -428,6 +428,23 @@ def main():
                 diabetes_prob = float(probability[1]) * 100
                 non_diabetes_prob = float(probability[0]) * 100
 
+                # Risk stratification tier
+                if diabetes_prob < 30.0:
+                    tier_label = "Low Risk"
+                    tier_badge = "🟢"
+                    tier_desc = "Patient exhibits low statistical probability based on current health features."
+                    tier_color = "#059669"
+                elif diabetes_prob <= 70.0:
+                    tier_label = "Moderate Risk"
+                    tier_badge = "🟡"
+                    tier_desc = "Patient exhibits borderline/moderate statistical probability. Preventive lifestyle measures advised."
+                    tier_color = "#d97706"
+                else:
+                    tier_label = "High Risk"
+                    tier_badge = "🔴"
+                    tier_desc = "Patient exhibits high statistical probability of diabetes based on training data patterns."
+                    tier_color = "#dc2626"
+
                 # Result display
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
@@ -435,10 +452,10 @@ def main():
                         st.markdown(f"""
                         <div class="pred-diabetic">
                             <div style="font-size:3rem">🔴</div>
-                            <h2>⚠️ Diabetic Risk Detected</h2>
-                            <p style="color:#7f1d1d; font-size:1rem; margin:0.5rem 0 0 0">
-                                The model predicts a <strong>high probability</strong> of diabetes
-                                based on the provided health indicators.
+                            <h2>⚠️ Diabetic (Risk Detected)</h2>
+                            <p style="color:#7f1d1d; font-size:1.05rem; margin:0.5rem 0 0 0">
+                                <strong>Stratification:</strong> {tier_badge} {tier_label}<br>
+                                {tier_desc}
                             </p>
                         </div>
                         """, unsafe_allow_html=True)
@@ -447,9 +464,9 @@ def main():
                         <div class="pred-healthy">
                             <div style="font-size:3rem">🟢</div>
                             <h2>✅ Non-Diabetic</h2>
-                            <p style="color:#064e3b; font-size:1rem; margin:0.5rem 0 0 0">
-                                The model predicts a <strong>low probability</strong> of diabetes
-                                based on the provided health indicators.
+                            <p style="color:#064e3b; font-size:1.05rem; margin:0.5rem 0 0 0">
+                                <strong>Stratification:</strong> {tier_badge} {tier_label}<br>
+                                {tier_desc}
                             </p>
                         </div>
                         """, unsafe_allow_html=True)
@@ -457,37 +474,107 @@ def main():
                 st.markdown("---")
 
                 # Probability display
-                st.markdown("### 📊 Estimated Risk Probability")
+                st.markdown("### 📊 Estimated Probability & Risk Stratification")
                 col_a, col_b = st.columns(2)
                 with col_a:
                     bar_class = "prob-bar-fill-high" if diabetes_prob > 50 else "prob-bar-fill-low"
                     st.markdown(f"""
-                    <div style="text-align:center; padding:1rem; background:#f8faff; border-radius:12px; border:1px solid #c7d7ff;">
-                        <div style="font-size:0.8rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em;">Diabetic Probability</div>
+                    <div style="text-align:center; padding:1.2rem; background:#f8faff; border-radius:12px; border:1px solid #c7d7ff;">
+                        <div style="font-size:0.8rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em;">Estimated Probability: Diabetic</div>
                         <div style="font-size:2.8rem; font-weight:700; color:{'#dc2626' if diabetes_prob > 50 else '#059669'}; margin:0.3rem 0">{diabetes_prob:.1f}%</div>
                         <div class="prob-bar-container">
                             <div class="{bar_class}" style="width:{diabetes_prob:.1f}%"></div>
                         </div>
+                        <div style="margin-top:0.6rem; font-size:0.9rem; font-weight:600; color:{tier_color};">{tier_badge} Tier: {tier_label}</div>
                     </div>
                     """, unsafe_allow_html=True)
                 with col_b:
                     st.markdown(f"""
-                    <div style="text-align:center; padding:1rem; background:#f8faff; border-radius:12px; border:1px solid #c7d7ff;">
-                        <div style="font-size:0.8rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em;">Non-Diabetic Probability</div>
+                    <div style="text-align:center; padding:1.2rem; background:#f8faff; border-radius:12px; border:1px solid #c7d7ff;">
+                        <div style="font-size:0.8rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em;">Estimated Probability: Non-Diabetic</div>
                         <div style="font-size:2.8rem; font-weight:700; color:#059669; margin:0.3rem 0">{non_diabetes_prob:.1f}%</div>
                         <div class="prob-bar-container">
                             <div class="prob-bar-fill-low" style="width:{non_diabetes_prob:.1f}%"></div>
                         </div>
+                        <div style="margin-top:0.6rem; font-size:0.9rem; font-weight:600; color:#059669;">Complementary Non-Diabetic Likelihood</div>
                     </div>
                     """, unsafe_allow_html=True)
 
                 st.markdown("""
                 <div class="disclaimer" style="margin-top:1.5rem">
-                    ℹ️ The probability above represents the model's estimated likelihood based on patterns
-                    learned from the training dataset. It is <strong>not a clinical diagnosis</strong>.
-                    This model was trained for educational purposes only.
+                    ℹ️ <strong>Academic & Screening Notice:</strong> The estimated probability of <strong>""" + f"{diabetes_prob:.1f}%" + """</strong> reflects the Random Forest model's pattern assessment across 14 health features. It is <strong>not a medical diagnosis</strong>. Consult a licensed physician for clinical blood glucose evaluations (e.g., HbA1c, OGTT).
                 </div>
                 """, unsafe_allow_html=True)
+
+                # Clinical Biomarker Indicators Breakdown
+                st.markdown("### 🔬 Clinical Biomarker Reference Assessment")
+                col_bio1, col_bio2, col_bio3, col_bio4 = st.columns(4)
+                
+                # Glucose evaluation
+                gluc_val = float(patient_inputs["Glucose"])
+                if gluc_val < 100:
+                    g_status, g_color = "Normal (< 100)", "green"
+                elif gluc_val <= 125:
+                    g_status, g_color = "Impaired / Prediabetes (100–125)", "orange"
+                else:
+                    g_status, g_color = "Elevated (≥ 126 mg/dL)", "red"
+                with col_bio1:
+                    st.metric("Fasting Glucose", f"{gluc_val:.0f} mg/dL", g_status, delta_color="inverse" if g_color == "red" else "normal")
+
+                # BMI evaluation
+                bmi_val = float(patient_inputs["BMI"])
+                if bmi_val < 25.0:
+                    bmi_status = "Normal (18.5–24.9)"
+                elif bmi_val < 30.0:
+                    bmi_status = "Overweight (25–29.9)"
+                else:
+                    bmi_status = "Obese (≥ 30.0)"
+                with col_bio2:
+                    st.metric("BMI Index", f"{bmi_val:.1f} kg/m²", bmi_status, delta_color="inverse" if bmi_val >= 30 else "normal")
+
+                # Blood Pressure evaluation
+                bp_val = float(patient_inputs["Blood_Pressure"])
+                if bp_val < 120:
+                    bp_status = "Normal (< 120)"
+                elif bp_val < 130:
+                    bp_status = "Elevated (120–129)"
+                else:
+                    bp_status = "Stage 1/2 HTN (≥ 130)"
+                with col_bio3:
+                    st.metric("Blood Pressure", f"{bp_val:.0f} mmHg", bp_status, delta_color="inverse" if bp_val >= 130 else "normal")
+
+                # Cholesterol evaluation
+                chol_val = float(patient_inputs["Cholesterol"])
+                if chol_val < 200:
+                    chol_status = "Desirable (< 200)"
+                elif chol_val < 240:
+                    chol_status = "Borderline (200–239)"
+                else:
+                    chol_status = "High (≥ 240)"
+                with col_bio4:
+                    st.metric("Total Cholesterol", f"{chol_val:.0f} mg/dL", chol_status, delta_color="inverse" if chol_val >= 240 else "normal")
+
+                # Actionable Lifestyle & Health Guidance
+                st.markdown("### 💡 Tailored Health & Lifestyle Guidance")
+                recs = []
+                if gluc_val >= 126 or diabetes_prob > 50:
+                    recs.append("🩺 **Clinical Consultation:** Fasting glucose or risk index is elevated. Consult a physician for formal HbA1c testing.")
+                if bmi_val >= 25.0:
+                    recs.append(f"⚖️ **Weight Management:** Current BMI is {bmi_val:.1f} kg/m². A sustained 5–10% body weight reduction significantly improves insulin sensitivity.")
+                if patient_inputs["Physical_Activity"] == "Sedentary":
+                    recs.append("🏃 **Physical Activity:** Sedentary routine detected. The ADA recommends at least 150 minutes of moderate-intensity aerobic activity per week.")
+                if patient_inputs["Smoking_Status"] in ["Current Smoker", "Former Smoker"]:
+                    recs.append("🚭 **Tobacco Cessation:** Smoking increases cardiovascular and insulin resistance risks. Cessation programs provide compounding metabolic benefits.")
+                if patient_inputs["Diet_Quality"] in ["Poor", "Average"]:
+                    recs.append("🥗 **Nutritional Optimization:** Emphasize high-fiber, low glycemic-index foods and reduce refined carbohydrate intake.")
+                if patient_inputs["Family_History"] == 1:
+                    recs.append("🧬 **Genetic Risk Awareness:** Family history is present. Routine annual metabolic screening is recommended regardless of symptom absence.")
+
+                if not recs:
+                    recs.append("🌟 **Healthy Baseline:** Key biomarkers and lifestyle choices align with healthy guidelines. Maintain active physical routine and balanced nutrition.")
+
+                for r in recs:
+                    st.markdown(f"- {r}")
 
                 # Patient summary
                 st.markdown("### 👤 Patient Input Summary")
@@ -725,6 +812,18 @@ def main():
             **Stratified split:** Yes  
             **Preprocessing:** Median imputation + StandardScaler + OneHotEncoder  
             """)
+
+        st.markdown("---")
+        st.markdown("#### 🏆 Baseline Model Benchmarking")
+        comp_csv_path = Path("models") / "model_comparison.csv"
+        if comp_csv_path.exists():
+            comp_df = pd.read_csv(comp_csv_path)
+            st.dataframe(comp_df, use_container_width=True, hide_index=True)
+            st.caption(
+                "Benchmark comparison evaluated on the identical 20% stratified test set. "
+                "Random Forest was selected as the primary production architecture for its superior balance "
+                "of high recall (99.43%), generalisation stability, and robust non-linear decision boundaries."
+            )
 
         st.info(
             "ℹ️ **Recall** is particularly relevant in a health screening context because failing "

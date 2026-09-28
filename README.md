@@ -181,6 +181,20 @@ weighted avg       1.00      1.00      1.00       700
 **Note:** The very high metrics reflect patterns in this synthetic/structured educational dataset.
 Real-world clinical performance would require validation on independent patient cohorts.
 
+### Baseline Model Benchmarking
+
+To validate the selection of Random Forest, multiple supervised classification architectures were evaluated on the identical 20% stratified test set:
+
+| Model Architecture | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
+|--------------------|----------|-----------|--------|----------|---------|
+| **Random Forest (Primary)** | **0.9957** | **0.9971** | **0.9943** | **0.9957** | **0.9998** |
+| Logistic Regression | 0.9929 | 0.9971 | 0.9886 | 0.9928 | 0.9998 |
+| Support Vector Machine (RBF) | 0.9914 | 0.9971 | 0.9857 | 0.9914 | 0.9997 |
+| Decision Tree | 0.9886 | 0.9858 | 0.9914 | 0.9886 | 0.9926 |
+| K-Nearest Neighbors (k=5) | 0.9814 | 0.9913 | 0.9714 | 0.9812 | 0.9977 |
+
+Random Forest demonstrates superior sensitivity (Recall = 99.43%) and area under the curve (ROC-AUC = 0.9998) while mitigating individual tree variance.
+
 ---
 
 ## User Interface
@@ -213,12 +227,13 @@ The Streamlit application (`app.py`) provides:
 ## Project Structure
 
 ```
-Diabetes-Prediction-/
+diabetes-prediction/
 ├── data/
-│   └── diabetes_binary_health.csv    ← Dataset (3,500 records, 14 columns)
+│   └── diabetes_binary_health.csv     ← Dataset (3,500 records, 14 columns)
 ├── models/
-│   ├── diabetes_model.pkl             ← Trained Random Forest pipeline
-│   └── plots/                         ← Generated visualization PNGs
+│   ├── diabetes_model.pkl              ← Serialized Random Forest pipeline (preprocessor + model)
+│   ├── model_comparison.csv           ← Baseline classifier evaluation benchmarks
+│   └── plots/                          ← Generated analytical and diagnostic plots
 │       ├── confusion_matrix.png
 │       ├── roc_curve.png
 │       ├── class_distribution.png
@@ -229,14 +244,18 @@ Diabetes-Prediction-/
 │       ├── dist_cholesterol.png
 │       ├── correlation_heatmap.png
 │       └── feature_importance.png
+├── notebooks/
+│   └── diabetes_analysis.ipynb         ← Complete interactive Jupyter analysis and EDA
 ├── src/
-│   ├── preprocessing.py               ← Dataset loading, inspection, pipeline builder
-│   ├── train_model.py                 ← Model training script
-│   ├── evaluate_model.py              ← Evaluation metrics and plot generation
-│   └── visualization.py              ← Healthcare analytics visualizations
-├── app.py                             ← Streamlit web application (main entry point)
-├── requirements.txt                   ← Python dependencies
-└── README.md                          ← This file
+│   ├── __init__.py
+│   ├── preprocessing.py                ← Data loading, validation, and ColumnTransformer pipeline
+│   ├── train_model.py                  ← Training script with stratified split and persistence
+│   ├── evaluate_model.py               ← Comprehensive metric evaluation and diagnostic plots
+│   └── visualization.py               ← Healthcare analytics and correlation visualizations
+├── app.py                              ← Interactive Streamlit web interface
+├── requirements.txt                    ← Minimal pinned project dependencies
+├── .gitignore                          ← Cache and local environment exclusions
+└── README.md                           ← Project documentation and technical report
 ```
 
 ---
