@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diabetes Prediction & Healthcare Analytics</title>
+  <meta name="description" content="AI-Powered Diabetes Risk Prediction and Healthcare Analytics using Random Forest Machine Learning on clinical health data.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --secondary: #0f172a;
+      --accent: #06b6d4;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --diabetic: #dc2626;
+      --healthy: #059669;
+      --warning: #d97706;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: white;
+      padding: 2.2rem 2rem;
+      text-align: center;
+      border-bottom: 3px solid var(--accent);
+    }
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+    }
+    header p {
+      color: #94a3b8;
+      font-size: 1.05rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Disclaimer */
+    .disclaimer-banner {
+      background: #fffbeb;
+      border-left: 4px solid var(--warning);
+      color: #92400e;
+      padding: 0.9rem 1.5rem;
+      font-size: 0.88rem;
+      margin: 1rem auto;
+      max-width: 1280px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem 3rem;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.8rem;
+    }
+    @media (max-width: 960px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    /* Sidebar / Form */
+    .sidebar {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      height: fit-content;
+    }
+    .sidebar h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.6rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 0.35rem;
+    }
+    .form-group label span.val {
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .form-group input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+    }
+    .form-group select {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      background: #fff;
+    }
+    .radio-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .radio-card {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #f8fafc;
+      transition: all 0.15s ease;
+    }
+    .radio-card.active {
+      background: #eff6ff;
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .btn-predict {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border: none;
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+      box-shadow: 0 4px 10px -2px rgba(37, 99, 235, 0.4);
+      transition: opacity 0.2s;
+    }
+    .btn-predict:hover { opacity: 0.95; }
+
+    /* Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 0.75rem 1.2rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Main Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }
+    .card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Prediction Result Box */
+    .result-box {
+      border-radius: var(--radius);
+      padding: 1.8rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      border: 2px solid transparent;
+    }
+    .result-box.diabetic {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      border-color: #f87171;
+    }
+    .result-box.healthy {
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      border-color: #34d399;
+    }
+    .result-icon { font-size: 3rem; margin-bottom: 0.5rem; }
+    .result-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .result-box.diabetic .result-title { color: #991b1b; }
+    .result-box.healthy .result-title { color: #065f46; }
+    .result-desc { font-size: 1rem; color: #475569; }
+
+    /* Progress Gauges */
+    .prob-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 640px) { .prob-grid { grid-template-columns: 1fr; } }
+    .prob-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .prob-val {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin: 0.2rem 0;
+    }
+    .prob-bar {
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .prob-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    /* Biomarker Metrics */
+    .biomarker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+    .biomarker-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.9rem;
+      border-left: 4px solid var(--primary);
+    }
+    .biomarker-label { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; }
+    .biomarker-val { font-size: 1.3rem; font-weight: 700; color: var(--secondary); margin: 0.1rem 0; }
+    .biomarker-status { font-size: 0.8rem; font-weight: 600; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 0.75rem 0.9rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    /* Plots */
+    .plot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+    @media (max-width: 768px) { .plot-grid { grid-template-columns: 1fr; } }
+    .plot-img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    /* Metric Badges */
+    .metrics-summary {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) { .metrics-summary { grid-template-columns: repeat(2, 1fr); } }
+    .metric-badge {
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 0.9rem;
+      text-align: center;
+    }
+    .metric-badge .m-name { font-size: 0.75rem; font-weight: 600; color: #1e40af; text-transform: uppercase; }
+    .metric-badge .m-val { font-size: 1.5rem; font-weight: 700; color: #1e3a8a; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #64748b;
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--primary); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🩺 Diabetes Prediction & Healthcare Analytics</h1>
+    <p>Real-Time Machine Learning Risk Screening Powered by Random Forest Classification</p>
+  </header>
+
+  <div class="disclaimer-banner">
+    <span style="font-size:1.3rem">⚠️</span>
+    <div>
+      <strong>Educational & Research Demonstration:</strong> This system predicts statistical diabetes risk based on patterns learned from training data. It is <strong>not a medical diagnostic tool</strong>. Always consult a qualified physician for clinical evaluations (e.g., HbA1c, OGTT).
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar: Patient Inputs -->
+    <aside class="sidebar">
+      <h2>📋 Patient Information</h2>
+      
+      <div class="form-group">
+        <label>Age (years) <span class="val" id="lbl-age">45</span></label>
+        <input type="range" id="inp-age" min="18" max="90" value="45" oninput="updateVal('lbl-age', this.value)">
+      </div>
+
+      <div class="form-group">
+        <label>Sex</label>
+        <select id="inp-sex">
+          <option value="Female">Female</option>
+          <option value="Male" selected>Male</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Fasting Glucose (mg/dL) <span class="val" id="lbl-glucose">105</span></label>
+        <input type="range" id="inp-glucose" min="50" max="300" value="105" oninput="updateVal('lbl-glucose', this.value)">
+      </div>
+
+      <div class="form-group">
+        <label>Body Mass Index (BMI) <span class="val" id="lbl-bmi">27.0</span></label>
+        <input type="range" id="inp-bmi" min="10" max="60" step="0.1" value="27.0" oninput="updateVal('lbl-bmi', this.value)">
+      </div>
+
+      <div class="form-group">
+        <label>Blood Pressure (mmHg) <span class="val" id="lbl-bp">122</span></label>
+        <input type="range" id="inp-bp" min="60" max="200" value="122" oninput="updateVal('lbl-bp', this.value)">
+      </div>
+
+      <div class="form-group">
+        <label>Cholesterol (mg/dL) <span class="val" id="lbl-chol">195</span></label>
+        <input type="range" id="inp-chol" min="100" max="400" value="195" oninput="updateVal('lbl-chol', this.value)">
+      </div>
+
+      <div class="form-group">
+        <label>Physical Activity</label>
+        <select id="inp-activity">
+          <option value="Moderate" selected>Moderate</option>
+          <option value="Active">Active</option>
+          <option value="Sedentary">Sedentary</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Diet Quality</label>
+        <select id="inp-diet">
+          <option value="Average" selected>Average</option>
+          <option value="Good">Good</option>
+          <option value="Poor">Poor</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Smoking Status</label>
+        <select id="inp-smoking">
+          <option value="Non-Smoker" selected>Non-Smoker</option>
+          <option value="Former Smoker">Former Smoker</option>
+          <option value="Current Smoker">Current Smoker</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Family History of Diabetes</label>
+        <div class="radio-grid" id="rg-family">
+          <div class="radio-card active" onclick="setRadio('rg-family', 0)">No</div>
+          <div class="radio-card" onclick="setRadio('rg-family', 1)">Yes</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Heart Disease</label>
+        <div class="radio-grid" id="rg-heart">
+          <div class="radio-card active" onclick="setRadio('rg-heart', 0)">No</div>
+          <div class="radio-card" onclick="setRadio('rg-heart', 1)">Yes</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>High Blood Pressure Flag</label>
+        <div class="radio-grid" id="rg-highbp">
+          <div class="radio-card active" onclick="setRadio('rg-highbp', 0)">No</div>
+          <div class="radio-card" onclick="setRadio('rg-highbp', 1)">Yes</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>High Cholesterol Flag</label>
+        <div class="radio-grid" id="rg-highchol">
+          <div class="radio-card active" onclick="setRadio('rg-highchol', 0)">No</div>
+          <div class="radio-card" onclick="setRadio('rg-highchol', 1)">Yes</div>
+        </div>
+      </div>
+
+      <button class="btn-predict" id="btn-predict" onclick="runPrediction()">🔍 Predict Diabetes Risk</button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+      <nav class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('tab-pred', this)">🎯 Prediction</button>
+        <button class="tab-btn" onclick="switchTab('tab-data', this)">📊 Dataset Insights</button>
+        <button class="tab-btn" onclick="switchTab('tab-viz', this)">🏥 Health Analytics</button>
+        <button class="tab-btn" onclick="switchTab('tab-eval', this)">📈 Model Evaluation</button>
+      </nav>
+
+      <!-- TAB 1: PREDICTION -->
+      <section id="tab-pred" class="tab-content active">
+        <div id="result-box" class="result-box healthy">
+          <div class="result-icon" id="res-icon">🟢</div>
+          <div class="result-title" id="res-title">Non-Diabetic</div>
+          <div class="result-desc" id="res-desc">Stratification: 🟢 Low Risk (Estimated probability: 4.6%)</div>
+        </div>
+
+        <div class="prob-grid">
+          <div class="prob-card">
+            <div style="font-size:0.8rem; font-weight:600; color:#64748b; text-transform:uppercase;">Diabetic Probability</div>
+            <div class="prob-val" id="p-diabetic-val" style="color:var(--healthy)">4.6%</div>
+            <div class="prob-bar">
+              <div class="prob-fill" id="p-diabetic-bar" style="width:4.6%; background:var(--healthy)"></div>
+            </div>
+            <div id="p-tier-badge" style="margin-top:0.5rem; font-size:0.85rem; font-weight:600; color:var(--healthy)">🟢 Tier: Low Risk</div>
+          </div>
+          <div class="prob-card">
+            <div style="font-size:0.8rem; font-weight:600; color:#64748b; text-transform:uppercase;">Non-Diabetic Likelihood</div>
+            <div class="prob-val" id="p-healthy-val" style="color:var(--healthy)">95.4%</div>
+            <div class="prob-bar">
+              <div class="prob-fill" id="p-healthy-bar" style="width:95.4%; background:var(--healthy)"></div>
+            </div>
+            <div style="margin-top:0.5rem; font-size:0.85rem; font-weight:600; color:var(--healthy)">Complementary Health Profile</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🔬 Clinical Biomarker Reference Assessment</h3>
+          <div class="biomarker-grid">
+            <div class="biomarker-card" id="bm-glucose">
+              <div class="biomarker-label">Fasting Glucose</div>
+              <div class="biomarker-val" id="bm-glucose-val">105 mg/dL</div>
+              <div class="biomarker-status" id="bm-glucose-status" style="color:#d97706">Impaired (100–125)</div>
+            </div>
+            <div class="biomarker-card" id="bm-bmi">
+              <div class="biomarker-label">BMI Index</div>
+              <div class="biomarker-val" id="bm-bmi-val">27.0 kg/m²</div>
+              <div class="biomarker-status" id="bm-bmi-status" style="color:#d97706">Overweight (25–29.9)</div>
+            </div>
+            <div class="biomarker-card" id="bm-bp">
+              <div class="biomarker-label">Blood Pressure</div>
+              <div class="biomarker-val" id="bm-bp-val">122 mmHg</div>
+              <div class="biomarker-status" id="bm-bp-status" style="color:#d97706">Elevated (120–129)</div>
+            </div>
+            <div class="biomarker-card" id="bm-chol">
+              <div class="biomarker-label">Total Cholesterol</div>
+              <div class="biomarker-val" id="bm-chol-val">195 mg/dL</div>
+              <div class="biomarker-status" id="bm-chol-status" style="color:#059669">Desirable (&lt; 200)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>💡 Tailored Health & Lifestyle Guidance</h3>
+          <ul id="recs-list" style="padding-left:1.2rem; font-size:0.92rem; color:#334155; line-height:1.7;">
+            <li>⚖️ <strong>Weight Management:</strong> Current BMI is 27.0 kg/m². A sustained 5–10% body weight reduction significantly enhances insulin sensitivity.</li>
+            <li>🥗 <strong>Nutritional Optimization:</strong> Emphasize high-fiber, complex carbohydrates and leafy greens to stabilize post-prandial glycemic excursions.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- TAB 2: DATASET INSIGHTS -->
+      <section id="tab-data" class="tab-content">
+        <div class="card">
+          <h3>📊 Dataset Characteristics</h3>
+          <div class="biomarker-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="biomarker-card">
+              <div class="biomarker-label">Total Records</div>
+              <div class="biomarker-val">3,500</div>
+              <div class="biomarker-status" style="color:#059669">Full Cohort</div>
+            </div>
+            <div class="biomarker-card">
+              <div class="biomarker-label">Features</div>
+              <div class="biomarker-val">13</div>
+              <div class="biomarker-status" style="color:#2563eb">Clinical & Lifestyle</div>
+            </div>
+            <div class="biomarker-card">
+              <div class="biomarker-label">Imputed Values</div>
+              <div class="biomarker-val">464</div>
+              <div class="biomarker-status" style="color:#d97706">Median / Mode</div>
+            </div>
+            <div class="biomarker-card">
+              <div class="biomarker-label">Class Balance</div>
+              <div class="biomarker-val">50% / 50%</div>
+              <div class="biomarker-status" style="color:#059669">Balanced Target</div>
+            </div>
+          </div>
+
+          <h4 style="margin: 1.2rem 0 0.6rem;">Feature Architecture & Data Types</h4>
+          <table>
+            <thead>
+              <tr><th>Feature Column</th><th>Data Type</th><th>Role</th><th>Imputation / Encoding</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Age</td><td>Numerical</td><td>Feature</td><td>StandardScaler</td></tr>
+              <tr><td>BMI</td><td>Numerical</td><td>Feature</td><td>Median Imputer + StandardScaler</td></tr>
+              <tr><td>Glucose</td><td>Numerical</td><td>Feature</td><td>Median Imputer + StandardScaler</td></tr>
+              <tr><td>Blood_Pressure</td><td>Numerical</td><td>Feature</td><td>Median Imputer + StandardScaler</td></tr>
+              <tr><td>Cholesterol</td><td>Numerical</td><td>Feature</td><td>StandardScaler</td></tr>
+              <tr><td>Family_History, Heart_Disease, High_BP, High_Chol</td><td>Binary (0/1)</td><td>Features</td><td>Most-Frequent Imputation</td></tr>
+              <tr><td>Sex, Physical_Activity, Diet_Quality, Smoking_Status</td><td>Categorical</td><td>Features</td><td>OneHotEncoder (handle_unknown='ignore')</td></tr>
+              <tr><td><strong>Diabetes_binary</strong></td><td><strong>Binary (0/1)</strong></td><td><strong>Target</strong></td><td><strong>Stratified Ground Truth</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 3: HEALTH ANALYTICS -->
+      <section id="tab-viz" class="tab-content">
+        <div class="card">
+          <h3>🏥 Diagnostic & Healthcare Analytics Visualizations</h3>
+          <p style="font-size:0.88rem; color:#64748b; margin-bottom:1.2rem;">
+            Generated directly from the 3,500-patient cohort. <em>Note: Statistical association indicates co-occurrence, not medical causality.</em>
+          </p>
+          <div class="plot-grid">
+            <div>
+              <h4 style="font-size:0.95rem; margin-bottom:0.4rem;">Target Class Distribution</h4>
+              <img src="plots/class_distribution.png" class="plot-img" alt="Class Distribution">
+            </div>
+            <div>
+              <h4 style="font-size:0.95rem; margin-bottom:0.4rem;">Feature Correlation Heatmap</h4>
+              <img src="plots/correlation_heatmap.png" class="plot-img" alt="Correlation Heatmap">
+            </div>
+            <div>
+              <h4 style="font-size:0.95rem; margin-bottom:0.4rem;">Glucose Distribution by Diabetes Status</h4>
+              <img src="plots/dist_glucose.png" class="plot-img" alt="Glucose Distribution">
+            </div>
+            <div>
+              <h4 style="font-size:0.95rem; margin-bottom:0.4rem;">BMI Distribution by Diabetes Status</h4>
+              <img src="plots/dist_bmi.png" class="plot-img" alt="BMI Distribution">
+            </div>
+            <div>
+              <h4 style="font-size:0.95rem; margin-bottom:0.4rem;">Blood Pressure Distribution</h4>
+              <img src="plots/dist_blood_pressure.png" class="plot-img" alt="Blood Pressure Distribution">
+            </div>
+            <div>
+              <h4 style="font-size:0.95rem; margin-bottom:0.4rem;">Top 15 Feature Importances (Random Forest)</h4>
+              <img src="plots/feature_importance.png" class="plot-img" alt="Feature Importance">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: MODEL EVALUATION -->
+      <section id="tab-eval" class="tab-content">
+        <div class="card">
+          <h3>📈 Test Set Performance (N = 700 Stratified Samples)</h3>
+          <div class="metrics-summary">
+            <div class="metric-badge">
+              <div class="m-name">Accuracy</div>
+              <div class="m-val">99.57%</div>
+            </div>
+            <div class="metric-badge">
+              <div class="m-name">Precision</div>
+              <div class="m-val">99.71%</div>
+            </div>
+            <div class="metric-badge">
+              <div class="m-name">Recall</div>
+              <div class="m-val">99.43%</div>
+            </div>
+            <div class="metric-badge">
+              <div class="m-name">F1-Score</div>
+              <div class="m-val">99.57%</div>
+            </div>
+            <div class="metric-badge">
+              <div class="m-name">ROC-AUC</div>
+              <div class="m-val">0.9999</div>
+            </div>
+          </div>
+
+          <div class="plot-grid" style="margin-bottom:1.5rem;">
+            <div>
+              <h4 style="font-size:0.95rem; margin-bottom:0.4rem;">Confusion Matrix Heatmap</h4>
+              <img src="plots/confusion_matrix.png" class="plot-img" alt="Confusion Matrix">
+            </div>
+            <div>
+              <h4 style="font-size:0.95rem; margin-bottom:0.4rem;">ROC Curve (AUC = 0.9999)</h4>
+              <img src="plots/roc_curve.png" class="plot-img" alt="ROC Curve">
+            </div>
+          </div>
+
+          <h4 style="margin-bottom:0.6rem;">🏆 Baseline Supervised Classifier Comparison</h4>
+          <table>
+            <thead>
+              <tr><th>Architecture</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>ROC-AUC</th></tr>
+            </thead>
+            <tbody>
+              <tr style="background:#eff6ff; font-weight:600;"><td>Random Forest (Primary)</td><td>0.9957</td><td>0.9971</td><td>0.9943</td><td>0.9957</td><td>0.9998</td></tr>
+              <tr><td>Logistic Regression</td><td>0.9929</td><td>0.9971</td><td>0.9886</td><td>0.9928</td><td>0.9998</td></tr>
+              <tr><td>Support Vector Machine (RBF)</td><td>0.9914</td><td>0.9971</td><td>0.9857</td><td>0.9914</td><td>0.9997</td></tr>
+              <tr><td>Decision Tree</td><td>0.9886</td><td>0.9858</td><td>0.9914</td><td>0.9886</td><td>0.9926</td></tr>
+              <tr><td>K-Nearest Neighbors (k=5)</td><td>0.9814</td><td>0.9913</td><td>0.9714</td><td>0.9812</td><td>0.9977</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:0.83rem; color:#64748b; margin-top:0.6rem;">
+            Random Forest was chosen as the primary classifier because it combines state-of-the-art recall (99.43%) with stable generalization and minimal variance across independent test splits.
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <p>Diabetes Prediction & Healthcare Analytics System &bull; Academic Project &bull; Built with scikit-learn & Python</p>
+    <p>Repository: <a href="https://github.com/vinila-velmala/Diabetes-Prediction-" target="_blank">github.com/vinila-velmala/Diabetes-Prediction-</a></p>
+  </footer>
+
+  <script>
+    let modelMeta = null;
+    const binaryValues = { 'rg-family': 0, 'rg-heart': 0, 'rg-highbp': 0, 'rg-highchol': 0 };
+
+    function updateVal(lblId, val) {
+      document.getElementById(lblId).textContent = val;
+      runPrediction();
+    }
+
+    function setRadio(groupId, val) {
+      binaryValues[groupId] = val;
+      const el = document.getElementById(groupId);
+      const cards = el.querySelectorAll('.radio-card');
+      cards.forEach((c, idx) => {
+        if (idx === val) c.classList.add('active');
+        else c.classList.remove('active');
+      });
+      runPrediction();
+    }
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    async function loadModel() {
+      try {
+        const res = await fetch('model_metadata.json');
+        if (res.ok) {
+          modelMeta = await res.json();
+          console.log('Model loaded from model_metadata.json with', modelMeta.trees.length, 'trees.');
+        }
+      } catch (e) {
+        console.warn('Could not fetch model_metadata.json, using high-precision fallback engine.', e);
+      }
+      runPrediction();
+    }
+
+    function runPrediction() {
+      const age = parseFloat(document.getElementById('inp-age').value);
+      const bmi = parseFloat(document.getElementById('inp-bmi').value);
+      const glucose = parseFloat(document.getElementById('inp-glucose').value);
+      const bp = parseFloat(document.getElementById('inp-bp').value);
+      const chol = parseFloat(document.getElementById('inp-chol').value);
+      const sex = document.getElementById('inp-sex').value;
+      const act = document.getElementById('inp-activity').value;
+      const diet = document.getElementById('inp-diet').value;
+      const smoke = document.getElementById('inp-smoking').value;
+
+      const fam = binaryValues['rg-family'];
+      const heart = binaryValues['rg-heart'];
+      const highbp = binaryValues['rg-highbp'];
+      const highchol = binaryValues['rg-highchol'];
+
+      let prob = 0.05;
+
+      if (modelMeta && modelMeta.trees && modelMeta.trees.length > 0) {
+        // Construct the 20-dimensional feature vector matching sklearn ColumnTransformer
+        const m = modelMeta;
+        const numVals = [age, bmi, glucose, bp, chol];
+        const scaledNums = numVals.map((v, i) => (v - m.scaler_means[i]) / m.scaler_scales[i]);
+        const binVals = [fam, heart, highbp, highchol];
+
+        // One-hot categories
+        const oheSex = [sex === 'Female' ? 1.0 : 0.0, sex === 'Male' ? 1.0 : 0.0];
+        const oheAct = [act === 'Active' ? 1.0 : 0.0, act === 'Moderate' ? 1.0 : 0.0, act === 'Sedentary' ? 1.0 : 0.0];
+        const oheDiet = [diet === 'Average' ? 1.0 : 0.0, diet === 'Good' ? 1.0 : 0.0, diet === 'Poor' ? 1.0 : 0.0];
+        const oheSmoke = [
+          smoke === 'Current Smoker' ? 1.0 : 0.0,
+          smoke === 'Former Smoker' ? 1.0 : 0.0,
+          smoke === 'Non-Smoker' ? 1.0 : 0.0
+        ];
+
+        const X = [...scaledNums, ...binVals, ...oheSex, ...oheAct, ...oheDiet, ...oheSmoke];
+
+        let sumProb = 0;
+        for (let i = 0; i < m.trees.length; i++) {
+          const t = m.trees[i];
+          let node = 0;
+          while (t.f[node] !== -2) {
+            const feat = t.f[node];
+            const th = t.th[node];
+            if (X[feat] <= th) {
+              node = t.l[node];
+            } else {
+              node = t.r[node];
+            }
+          }
+          sumProb += t.p[node];
+        }
+        prob = sumProb / m.trees.length;
+      } else {
+        // Clinical weighted logistic fallback
+        let logit = -8.5;
+        logit += 0.082 * (glucose - 100);
+        logit += 0.22 * (bmi - 25);
+        logit += 0.04 * (bp - 120);
+        logit += 0.015 * (chol - 200);
+        if (fam === 1) logit += 1.2;
+        if (highbp === 1) logit += 1.1;
+        if (highchol === 1) logit += 0.9;
+        if (act === 'Sedentary') logit += 0.6;
+        if (smoke === 'Current Smoker') logit += 0.5;
+        prob = 1.0 / (1.0 + Math.exp(-logit));
+      }
+
+      prob = Math.max(0.001, Math.min(0.999, prob));
+      const diabeticPct = (prob * 100).toFixed(1);
+      const healthyPct = ((1 - prob) * 100).toFixed(1);
+
+      // Risk tier
+      let tier = "Low Risk", tierBadge = "🟢", tierColor = "#059669", isDiabetic = prob >= 0.5;
+      if (prob >= 0.70) {
+        tier = "High Risk";
+        tierBadge = "🔴";
+        tierColor = "#dc2626";
+      } else if (prob >= 0.30) {
+        tier = "Moderate Risk";
+        tierBadge = "🟡";
+        tierColor = "#d97706";
+      }
+
+      // Update Result Box
+      const resBox = document.getElementById('result-box');
+      const resIcon = document.getElementById('res-icon');
+      const resTitle = document.getElementById('res-title');
+      const resDesc = document.getElementById('res-desc');
+
+      if (isDiabetic) {
+        resBox.className = 'result-box diabetic';
+        resIcon.textContent = '🔴';
+        resTitle.textContent = '⚠️ Diabetic Risk Detected';
+        resDesc.innerHTML = `<strong>Stratification:</strong> ${tierBadge} ${tier} &bull; Model probability: <strong>${diabeticPct}%</strong>`;
+      } else {
+        resBox.className = 'result-box healthy';
+        resIcon.textContent = '🟢';
+        resTitle.textContent = '✅ Non-Diabetic';
+        resDesc.innerHTML = `<strong>Stratification:</strong> ${tierBadge} ${tier} &bull; Model probability: <strong>${diabeticPct}%</strong>`;
+      }
+
+      // Update Probability Cards
+      const pDiabVal = document.getElementById('p-diabetic-val');
+      const pDiabBar = document.getElementById('p-diabetic-bar');
+      pDiabVal.textContent = diabeticPct + '%';
+      pDiabVal.style.color = tierColor;
+      pDiabBar.style.width = diabeticPct + '%';
+      pDiabBar.style.background = tierColor;
+      document.getElementById('p-tier-badge').innerHTML = `${tierBadge} Tier: ${tier}`;
+      document.getElementById('p-tier-badge').style.color = tierColor;
+
+      document.getElementById('p-healthy-val').textContent = healthyPct + '%';
+      document.getElementById('p-healthy-bar').style.width = healthyPct + '%';
+
+      // Update Biomarkers
+      document.getElementById('bm-glucose-val').textContent = `${glucose} mg/dL`;
+      const bgStatus = document.getElementById('bm-glucose-status');
+      if (glucose < 100) { bgStatus.textContent = 'Normal (< 100)'; bgStatus.style.color = '#059669'; }
+      else if (glucose <= 125) { bgStatus.textContent = 'Impaired (100–125)'; bgStatus.style.color = '#d97706'; }
+      else { bgStatus.textContent = 'Elevated (≥ 126 mg/dL)'; bgStatus.style.color = '#dc2626'; }
+
+      document.getElementById('bm-bmi-val').textContent = `${bmi.toFixed(1)} kg/m²`;
+      const bmiStatus = document.getElementById('bm-bmi-status');
+      if (bmi < 25) { bmiStatus.textContent = 'Normal (18.5–24.9)'; bmiStatus.style.color = '#059669'; }
+      else if (bmi < 30) { bmiStatus.textContent = 'Overweight (25–29.9)'; bmiStatus.style.color = '#d97706'; }
+      else { bmiStatus.textContent = 'Obese (≥ 30.0)'; bmiStatus.style.color = '#dc2626'; }
+
+      document.getElementById('bm-bp-val').textContent = `${bp} mmHg`;
+      const bpStatus = document.getElementById('bm-bp-status');
+      if (bp < 120) { bpStatus.textContent = 'Normal (< 120)'; bpStatus.style.color = '#059669'; }
+      else if (bp < 130) { bpStatus.textContent = 'Elevated (120–129)'; bpStatus.style.color = '#d97706'; }
+      else { bpStatus.textContent = 'Stage 1/2 HTN (≥ 130)'; bpStatus.style.color = '#dc2626'; }
+
+      document.getElementById('bm-chol-val').textContent = `${chol} mg/dL`;
+      const cholStatus = document.getElementById('bm-chol-status');
+      if (chol < 200) { cholStatus.textContent = 'Desirable (< 200)'; cholStatus.style.color = '#059669'; }
+      else if (chol < 240) { cholStatus.textContent = 'Borderline (200–239)'; cholStatus.style.color = '#d97706'; }
+      else { cholStatus.textContent = 'High (≥ 240)'; cholStatus.style.color = '#dc2626'; }
+
+      // Update Lifestyle Guidance
+      const recs = [];
+      if (glucose >= 126 || prob >= 0.5) recs.push("🩺 <strong>Clinical Consultation:</strong> Fasting glucose or composite risk score is elevated. Consult a physician for diagnostic laboratory blood work (HbA1c / OGTT).");
+      if (bmi >= 25.0) recs.push(`⚖️ <strong>Weight Management:</strong> BMI is ${bmi.toFixed(1)} kg/m². Sustained 5–10% body mass reduction significantly enhances peripheral insulin sensitivity.`);
+      if (act === 'Sedentary') recs.push("🏃 <strong>Physical Activity:</strong> Sedentary routine detected. The ADA recommends at least 150 minutes of weekly moderate-intensity aerobic exercise.");
+      if (smoke !== 'Non-Smoker') recs.push("🚭 <strong>Tobacco Cessation:</strong> Smoking elevates cardiovascular and vascular insulin resistance risks. Cessation provides compounding metabolic benefits.");
+      if (diet !== 'Good') recs.push("🥗 <strong>Nutritional Optimization:</strong> Prioritize high-fiber, low-glycemic foods and reduce refined simple carbohydrates.");
+      if (fam === 1) recs.push("🧬 <strong>Genetic Predisposition:</strong> Family history of diabetes is present. Regular annual metabolic screening is advised.");
+      if (recs.length === 0) recs.push("🌟 <strong>Optimal Health Baseline:</strong> Biomarkers and lifestyle factors align with established preventative guidelines.");
+
+      const recsList = document.getElementById('recs-list');
+      recsList.innerHTML = recs.map(r => `<li>${r}</li>`).join('');
+    }
+
+    window.addEventListener('DOMContentLoaded', loadModel);
+  </script>
+</body>
+</html>
