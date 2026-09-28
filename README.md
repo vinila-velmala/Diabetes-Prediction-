@@ -3,6 +3,9 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://python.org)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3%2B-orange)](https://scikit-learn.org)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.28%2B-red)](https://streamlit.io)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-success?logo=github)](https://vinila-velmala.github.io/Diabetes-Prediction-/)
+
+> 🌐 **Live Web Application:** [https://vinila-velmala.github.io/Diabetes-Prediction-/](https://vinila-velmala.github.io/Diabetes-Prediction-/)
 
 A machine-learning application that predicts whether a patient is **Diabetic (1)** or **Non-Diabetic (0)**
 using a Random Forest classifier trained on a health dataset with 14 clinical and lifestyle features.
