@@ -213,7 +213,7 @@ The Streamlit application (`app.py`) provides:
 ## Project Structure
 
 ```
-disease-prediction-prototype/
+Diabetes-Prediction-/
 ├── data/
 │   └── diabetes_binary_health.csv    ← Dataset (3,500 records, 14 columns)
 ├── models/
@@ -251,7 +251,7 @@ disease-prediction-prototype/
 
 ```bash
 # 1. Clone or navigate to the project directory
-cd disease-prediction-prototype
+cd Diabetes-Prediction-
 
 # 2. (Optional) Create a virtual environment
 python -m venv venv
